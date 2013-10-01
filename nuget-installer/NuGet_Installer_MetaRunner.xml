@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta-runner name="NuGet::  Install">
+  <description>Install packages via NuGet.exe</description>
+  <settings>
+    <parameters>
+      <param name="NuGetInstaller.ExcludeVersion" value="$true" spec="checkbox checkedValue='$true' description='If set, the destination directory will contain only the package name, not the version number.' display='normal' label='No Version:' uncheckedValue='$false'" />
+      <param name="NuGetInstaller.Log" value="$false" spec="checkbox checkedValue='$true' description='Determines whether or not messages other than warnings or errors are written to the log.' display='normal' label='Log:' uncheckedValue='$false'" />
+      <param name="NuGetInstaller.OutputDirectory" value="" spec="text description='Specifies the directory in which packages will be installed. If none specified, uses the current directory.' display='normal' label='Output Directory:' validationMode='any'" />
+      <param name="NuGetInstaller.Package" value="" spec="text description='Package id or packages.config file path' display='normal' label='Package:' validationMode='not_empty'" />
+    </parameters>
+    <build-runners>
+      <runner name="" type="jetbrains_powershell">
+        <parameters>
+          <param name="jetbrains_powershell_bitness" value="x64" />
+          <param name="jetbrains_powershell_execution" value="STDIN" />
+          <param name="jetbrains_powershell_noprofile" value="true" />
+          <param name="jetbrains_powershell_script_mode" value="CODE" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="jetbrains_powershell_script_code"><![CDATA[
+$_VerbosePreference = $VerbosePreference
+
+if(%NuGetInstaller.Log%) {
+  $VerbosePreference = 'Continue'
+}
+
+function Build-Parameters {
+  $parameters = @()
+
+  $parameters += "install"
+  $parameters += "%NuGetInstaller.Package%"
+
+  if([String]::IsNullOrWhiteSpace("%NuGetInstaller.OutputDirectory%") -eq $false) {
+    $parameters += "-OutputDirectory"
+    $parameters += "%NuGetInstaller.OutputDirectory%"
+  }
+
+  if(%NuGetInstaller.ExcludeVersion%) {
+    $parameters += "-ExcludeVersion"
+  }
+
+  return $parameters
+}
+
+$nuget = Join-Path -Path '%teamcity.tool.NuGet.CommandLine.DEFAULT.nupkg%' -ChildPath 'tools\NuGet.exe'
+$parameters = Build-Parameters
+Write-Verbose $("calling [{0}] with parameters [{1}]" -f $nuget, $($parameters -join ' '))
+
+& $nuget $parameters | Out-Null
+$VerbosePreference = $_VerbosePreference
+          ]]></param>
+        </parameters>
+      </runner>
+    </build-runners>
+    <requirements />
+  </settings>
+</meta-runner>
+

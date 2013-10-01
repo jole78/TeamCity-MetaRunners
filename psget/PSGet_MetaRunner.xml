@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta-runner name="PSGet:: Installer">
+  <description>Install via PSGet</description>
+  <settings>
+    <parameters>
+      <param name="PSGet.Module" value="" spec="text description='The module name' display='normal' label='Module' validationMode='not_empty'" />
+      <param name="PSGet.Global" value="$true" spec="checkbox checkedValue='$true' description='Install globally' display='normal' label='Global' uncheckedValue='$false'" />
+      <param name="PSGet.UseNuGet" value="$false" spec="checkbox checkedValue='$true' description='Install from NuGet' display='normal' label='Use NuGet' uncheckedValue='$false'" />
+    </parameters>
+    <build-runners>
+      <runner name="PSGet" type="jetbrains_powershell">
+        <parameters>
+          <param name="jetbrains_powershell_bitness" value="x64" />
+          <param name="jetbrains_powershell_errorToError" value="true" />
+          <param name="jetbrains_powershell_execution" value="STDIN" />
+          <param name="jetbrains_powershell_script_mode" value="CODE" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="jetbrains_powershell_script_code"><![CDATA[
+$PsGetDestinationModulePath = Join-Path "%env.CommonProgramW6432%" "Modules"
+$_ErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+
+$(New-Object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | iex -wa:SilentlyContinue
+
+$ErrorActionPreference = $_ErrorActionPreference
+
+function Build-Parameters {
+  $arguments = @{}
+
+  if(%PSGet.UseNuGet%) {
+    $arguments.NuGetPackageId = '%PSGet.Module%'
+  } else {
+    $arguments.Module = '%PSGet.Module%'
+  }
+
+  $arguments.Global = %PSGet.Global%
+
+  return $arguments
+}
+
+$params = Build-Parameters
+Install-Module @params -ErrorAction:Stop
+          ]]></param>
+        </parameters>
+      </runner>
+    </build-runners>
+    <requirements />
+  </settings>
+</meta-runner>
+
