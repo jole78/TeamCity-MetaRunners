@@ -4,11 +4,16 @@ function Build-Arguments {
   $parameters += "install"
   $parameters += "%NuGetInstaller.Package%"
 
+  if([String]::IsNullOrWhiteSpace("%NuGetInstaller.Version%") -eq $false) {
+    $parameters += "-Version"
+    $parameters += "%NuGetInstaller.Version%"
+  }
+  
   if([String]::IsNullOrWhiteSpace("%NuGetInstaller.OutputDirectory%") -eq $false) {
     $parameters += "-OutputDirectory"
     $parameters += "%NuGetInstaller.OutputDirectory%"
   }
-
+  
   if([String]::IsNullOrWhiteSpace("%NuGetInstaller.Options%") -eq $false) {
 	$("%NuGetInstaller.Options%" -split ' ') | Foreach-Object {
 		$parameters += $_

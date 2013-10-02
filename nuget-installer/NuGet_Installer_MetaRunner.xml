@@ -4,9 +4,10 @@
   <settings>
     <parameters>
       <param name="NuGetInstaller.Package" value="" spec="text description='Package id or packages.config file path' display='normal' label='Package:' validationMode='not_empty'" />
+      <param name="NuGetInstaller.Version" value="" spec="text description='The version of the package to install. Default is the latest one.' display='normal' label='Version:' validationMode='any'" />
       <param name="NuGetInstaller.OutputDirectory" value="" spec="text description='Specifies the directory in which packages will be installed. If none specified, uses the checkout directory.' display='normal' label='Output Directory:' validationMode='any'" />
       <param name="NuGetInstaller.Log" value="$false" spec="checkbox checkedValue='$true' description='Determines whether or not messages other than warnings or errors are written to the log.' display='normal' label='Log Messages:' uncheckedValue='$false'" />
-      <param name="NuGetInstaller.Options" value="" spec="text display='normal' label='Options:' validationMode='any'" />
+      <param name="NuGetInstaller.Options" value="" spec="text display='normal' label='Options:' description='Any optional arguments to include.' validationMode='any'" />
     </parameters>
     <build-runners>
       <runner name="" type="jetbrains_powershell">
@@ -23,11 +24,16 @@ function Build-Arguments {
   $parameters += "install"
   $parameters += "%NuGetInstaller.Package%"
 
+  if([String]::IsNullOrWhiteSpace("%NuGetInstaller.Version%") -eq $false) {
+    $parameters += "-Version"
+    $parameters += "%NuGetInstaller.Version%"
+  }
+  
   if([String]::IsNullOrWhiteSpace("%NuGetInstaller.OutputDirectory%") -eq $false) {
     $parameters += "-OutputDirectory"
     $parameters += "%NuGetInstaller.OutputDirectory%"
   }
-
+  
   if([String]::IsNullOrWhiteSpace("%NuGetInstaller.Options%") -eq $false) {
   $("%NuGetInstaller.Options%" -split ' ') | Foreach-Object {
     $parameters += $_
