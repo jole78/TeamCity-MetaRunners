@@ -2,20 +2,20 @@ function Build-Arguments {
   $parameters = @()
 
   $parameters += "install"
-  $parameters += "%NuGetInstaller.Package%"
+  $parameters += "%mr.NuGetInstall.Package%"
 
-  if([String]::IsNullOrWhiteSpace("%NuGetInstaller.Version%") -eq $false) {
+  if([String]::IsNullOrWhiteSpace("%mr.NuGetInstall.Version%") -eq $false) {
     $parameters += "-Version"
-    $parameters += "%NuGetInstaller.Version%"
+    $parameters += "%mr.NuGetInstall.Version%"
   }
   
-  if([String]::IsNullOrWhiteSpace("%NuGetInstaller.OutputDirectory%") -eq $false) {
+  if([String]::IsNullOrWhiteSpace("%mr.NuGetInstall.OutputDirectory%") -eq $false) {
     $parameters += "-OutputDirectory"
-    $parameters += "%NuGetInstaller.OutputDirectory%"
+    $parameters += "%mr.NuGetInstall.OutputDirectory%"
   }
   
-  if([String]::IsNullOrWhiteSpace("%NuGetInstaller.Options%") -eq $false) {
-	$("%NuGetInstaller.Options%" -split ' ') | Foreach-Object {
+  if([String]::IsNullOrWhiteSpace("%mr.NuGetInstall.Options%") -eq $false) {
+	$("%mr.NuGetInstall.Options%" -split ' ') | Foreach-Object {
 		$parameters += $_
 	}
   }
@@ -26,7 +26,7 @@ function Build-Arguments {
 $nuget = Join-Path -Path '%teamcity.tool.NuGet.CommandLine.DEFAULT.nupkg%' -ChildPath 'tools\NuGet.exe'
 $arguments = Build-Arguments
 
-if(%NuGetInstaller.Log%) {
+if(%mr.NuGetInstall.Log%) {
 	Write-Host "Executing nuget.exe"
 	Write-Host "source: $nuget"
 	Write-Host "using arguments: " -NoNewline
