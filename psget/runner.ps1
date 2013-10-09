@@ -15,6 +15,8 @@ function Build-Arguments {
     $arguments.Module = "%mr.PSGet.Module%"
   }
 
+
+
   $arguments.Global = %mr.PSGet.Global%
 
   # PackageVersion=2.3.1 NugetSource=http://example.com

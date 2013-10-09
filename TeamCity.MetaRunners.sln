@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.20827.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget-install", "nuget-install", "{DD3376D7-2F58-4C76-AE38-64766D7B4F5E}"
+	ProjectSection(SolutionItems) = preProject
+		nuget-install\NuGet_Install_MetaRunner.xml = nuget-install\NuGet_Install_MetaRunner.xml
+		nuget-install\runner.ps1 = nuget-install\runner.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "psget", "psget", "{F264F6A4-A172-43DE-BA93-B9571619F317}"
+	ProjectSection(SolutionItems) = preProject
+		psget\PSGet_MetaRunner.xml = psget\PSGet_MetaRunner.xml
+		psget\runner.ps1 = psget\runner.ps1
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
