@@ -15,6 +15,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "psget", "psget", "{F264F6A4
 		psget\runner.ps1 = psget\runner.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "semver-buildnumber", "semver-buildnumber", "{6A0A7955-DAC3-4FBE-B6EA-CC5DDD60407A}"
+	ProjectSection(SolutionItems) = preProject
+		semver-buildnumber\_TestContext.ps1 = semver-buildnumber\_TestContext.ps1
+		semver-buildnumber\runner.ps1 = semver-buildnumber\runner.ps1
+		semver-buildnumber\runner.tests.ps1 = semver-buildnumber\runner.tests.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

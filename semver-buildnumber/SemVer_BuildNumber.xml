@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<meta-runner name="Semantic Build Number">
+  <description>Semantic (SemVer) build number runner(e.g. 1.0.3+78.4112e01).</description>
+  <settings>
+    <parameters>
+      <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, the version will be fetched from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
+      <param name="mr.SemVer.VCSType" value="None" spec="select data_1='None' data_2='Git' data_3='TFS' description='If chosen, the revision part from the VCS will be included as part of the SemVer. (e.g. short commit hash for Git, ChangeSet for TFS, etc.)' display='normal' label='VCS Type:'" />
+      <param name="mr.SemVer.Debug" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log debug messages?' display='normal' label='Debug:' uncheckedValue='SilentlyContinue'" />
+      <param name="mr.SemVer.Verbose" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log verbose messages?' display='normal' label='Verbose:' uncheckedValue='SilentlyContinue'" />
+    </parameters>
+    <build-runners>
+      <runner name="SemVer" type="jetbrains_powershell">
+        <parameters>
+          <param name="jetbrains_powershell_execution" value="PS1" />
+          <param name="jetbrains_powershell_noprofile" value="true" />
+          <param name="jetbrains_powershell_errorToError" value="error" />
+          <param name="jetbrains_powershell_script_mode" value="CODE" />
+          <param name="jetbrains_powershell_bitness" value="x86" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="jetbrains_powershell_script_code">
+            <![CDATA[
+function Update-BuildNumber {
+	param(
+		[Parameter(ValueFromPipeline=$true)]
+		[String]$BuildNumber
+	)
+	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
+	Write-Debug $("Build Number: {0}" -f $BuildNumber)
+	
+	Write-Host "##teamcity[buildNumber '$BuildNumber']"
+}
+
+
+function Get-NuSpecVersion {
+	[CmdletBinding()]
+	param()
+	
+	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
+	Write-Debug $("NuSpec File: {0}" -f $mr.NuSpecFilePath)
+	
+	$nuspec_file = $(Get-Content $mr.NuSpecFilePath -ErrorAction:SilentlyContinue) -as [Xml]
+	if($nuspec_file)
+	{
+		$version = $nuspec_file.package.metadata.version -as [System.Version]
+		if($version) {
+			return $version
+		} else {
+			Write-Error "The NuSpec file contains no valid version information"
+		}		
+	} else {
+		Write-Error $("NuSpec file path invalid or it wasn't a valid nuspec file.")
+	}
+}
+
+function Get-TeamCityVersion {
+	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
+	Write-Debug $("VCS Type: {0}" -f $mr.VCSType)
+	Write-Debug $("Build Counter: {0}" -f $mr.BuildCounter)
+	
+	switch ($mr.VCSType) {
+		"Git" {
+			$git_short_hash = $mr.BuildVCSNumber.SubString(0,7)
+			Write-Debug $("Git ShortHash: {0}" -f $git_short_hash)
+		
+			return $("{0}.{1}" -f $mr.BuildCounter, $git_short_hash)
+		}
+		default {return $mr.BuildCounter} #same as None
+	}
+	
+}
+
+function Invoke-Exit {
+	param(
+		[Int]$ExitCode
+	)
+	
+	[System.Environment]::Exit($ExitCode)
+}
+
+function Get-SemVer {
+	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
+	
+	if($mr.NuSpecFilePath) {
+		$version = Get-NuSpecVersion -ea:Stop
+	}
+	
+	$teamcity_version = Get-TeamCityVersion
+	Write-Debug $("TeamCity Version: {0}" -f $teamcity_version)
+	
+	return $("{0}+{1}" -f $version, $teamcity_version) 
+}
+
+function Set-PSConsole {
+  try {
+        $max = $host.UI.RawUI.MaxPhysicalWindowSize
+        if($max) {
+        $host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.Size(9999,9999)
+        $host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.Size($max.Width,$max.Height)
+    }
+    } catch {}
+}
+
+$mr = @{
+	NuSpecFilePath = "%mr.SemVer.NuSpecFilePath%"
+	BuildCounter = "%build.counter%"
+	BuildVCSNumber = "%build.vcs.number%"
+	VCSType = "%mr.SemVer.VCSType%"
+}
+
+$VerbosePreference = "%mr.SemVer.Verbose%"
+$DebugPreference = "%mr.SemVer.Debug%"
+
+if ($env:TEAMCITY_VERSION) {
+    Set-PSConsole
+}
+
+try {
+	Get-SemVer | Update-BuildNumber
+} catch {
+	Write-Error $_
+	Invoke-Exit 1
+}
+			]]>
+          </param>
+        </parameters>
+      </runner>
+    </build-runners>
+    <requirements />
+  </settings>
+</meta-runner>
+
