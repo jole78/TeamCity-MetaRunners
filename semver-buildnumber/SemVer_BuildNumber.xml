@@ -3,6 +3,7 @@
   <description>Semantic (SemVer) build number runner(e.g. 1.0.3+78.4112e01).</description>
   <settings>
     <parameters>
+      <param name="mr.SemVer.ManualVersion" value="" spec="text description='Manual version. If included, it overrides any other method.' display='normal' label='Major.Minor.Patch:' validationMode='any'" />
       <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, the version will be fetched from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
       <param name="mr.SemVer.VCSType" value="None" spec="select data_1='None' data_2='Git' data_3='TFS' description='If chosen, the revision part from the VCS will be included as part of the SemVer. (e.g. short commit hash for Git, ChangeSet for TFS, etc.)' display='normal' label='VCS Type:'" />
       <param name="mr.SemVer.Debug" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log debug messages?' display='normal' label='Debug:' uncheckedValue='SilentlyContinue'" />
@@ -30,7 +31,6 @@ function Update-BuildNumber {
 	Write-Host "##teamcity[buildNumber '$BuildNumber']"
 }
 
-
 function Get-NuSpecVersion {
 	[CmdletBinding()]
 	param()
@@ -52,7 +52,7 @@ function Get-NuSpecVersion {
 	}
 }
 
-function Get-TeamCityVersion {
+function Get-BuildMetaData {
 	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
 	Write-Debug $("VCS Type: {0}" -f $mr.VCSType)
 	Write-Debug $("Build Counter: {0}" -f $mr.BuildCounter)
@@ -80,14 +80,22 @@ function Invoke-Exit {
 function Get-SemVer {
 	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
 	
-	if($mr.NuSpecFilePath) {
-		$version = Get-NuSpecVersion -ea:Stop
+	$version = $mr.ManualVersion -as [System.Version]
+	
+	if($mr.NuSpecFilePath -and ($version -eq $null)) {
+		$version = Get-NuSpecVersion -ea:Stop		
 	}
 	
-	$teamcity_version = Get-TeamCityVersion
-	Write-Debug $("TeamCity Version: {0}" -f $teamcity_version)
+	if($version -eq $null) {
+		Write-Error "[Major.Minor.Patch] of SemVer failed. Found no valid method of parsing it."
+	}
 	
-	return $("{0}+{1}" -f $version, $teamcity_version) 
+	$build_metadata = Get-BuildMetaData
+	
+	Write-Debug $("Version: {0}" -f $version)
+	Write-Debug $("Build MetaData: {0}" -f $build_metadata)
+	
+	return $("{0}+{1}" -f $version, $build_metadata) 
 }
 
 function Set-PSConsole {
@@ -105,6 +113,7 @@ $mr = @{
 	BuildCounter = "%build.counter%"
 	BuildVCSNumber = "%build.vcs.number%"
 	VCSType = "%mr.SemVer.VCSType%"
+	ManualVersion = "%mr.SemVer.ManualVersion%"
 }
 
 $VerbosePreference = "%mr.SemVer.Verbose%"

@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "semver-buildnumber", "semve
 		semver-buildnumber\_TestContext.ps1 = semver-buildnumber\_TestContext.ps1
 		semver-buildnumber\runner.ps1 = semver-buildnumber\runner.ps1
 		semver-buildnumber\runner.tests.ps1 = semver-buildnumber\runner.tests.ps1
+		semver-buildnumber\SemVer_BuildNumber.xml = semver-buildnumber\SemVer_BuildNumber.xml
+		semver-buildnumber\template.nuspec = semver-buildnumber\template.nuspec
 	EndProjectSection
 EndProject
 Global
