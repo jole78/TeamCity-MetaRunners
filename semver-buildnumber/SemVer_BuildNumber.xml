@@ -6,6 +6,7 @@
       <param name="mr.SemVer.ManualVersion" value="" spec="text description='Manual version. If included, it overrides any other method.' display='normal' label='Major.Minor.Patch:' validationMode='any'" />
       <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, MAJOR.MINOR.PATCH will be parsed from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
       <param name="mr.SemVer.RevisionType" value="n/a" spec="select data_1='n/a' data_2='SHA' data_3='STD' label_2='Git Style (Short Hash)' label_3='Standard (default)' description='The revision part from the VCS will be included as part of the SemVer build metadata. (e.g. short commit hash for Git, ChangeSet for TFS, etc.)' display='normal' label='Revision Type:'" />
+      <param name="mr.SemVer.IgnoreMetaData" value="$false" spec="checkbox checkedValue='$true' description='Skips the build metadata part (i.e. +X.X)' display='normal' label='Ignore Build Metadata:' uncheckedValue='$false'" />
       <param name="mr.SemVer.Debug" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log debug messages?' display='normal' label='Debug:' uncheckedValue='SilentlyContinue'" />
       <param name="mr.SemVer.Verbose" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log verbose messages?' display='normal' label='Verbose:' uncheckedValue='SilentlyContinue'" />
     </parameters>
@@ -95,9 +96,16 @@ function Get-SemVer {
 		Write-Error "[Major.Minor.Patch] of SemVer failed. Found no valid method of parsing it."
 	}
 	
-	$build_metadata = Get-BuildMetaData
-	
 	Write-Debug $("Version: {0}" -f $version)
+	
+	$mr.IgnoreBuildMetaData = [Bool]::Parse($mr.IgnoreBuildMetaData)
+	Write-Debug $("Ignore MetaData: {0}" -f $mr.IgnoreBuildMetaData)
+	
+	if($mr.IgnoreBuildMetaData) {
+		return $version
+	}
+	
+	$build_metadata = Get-BuildMetaData	
 	Write-Debug $("Build MetaData: {0}" -f $build_metadata)
 	
 	return $("{0}+{1}" -f $version, $build_metadata) 
@@ -119,6 +127,7 @@ $mr = @{
 	BuildVCSNumber = "%build.vcs.number%"
 	ManualVersion = "%mr.SemVer.ManualVersion%"
 	RevisionType = "%mr.SemVer.RevisionType%"
+	IgnoreBuildMetaData = "%mr.SemVer.IgnoreMetaData%"
 }
 
 $VerbosePreference = "%mr.SemVer.Verbose%"
