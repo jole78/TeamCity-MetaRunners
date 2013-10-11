@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<meta-runner name="Semantic Build Number">
-  <description>Semantic (SemVer) build number runner(e.g. 1.0.3+78.4112e01).</description>
+<meta-runner name="SemVer Build Number">
+  <description>Semantic Versioning (SemVer) build number runner(e.g. 1.0.3+78.4112e01).</description>
   <settings>
     <parameters>
       <param name="mr.SemVer.ManualVersion" value="" spec="text description='Manual version. If included, it overrides any other method.' display='normal' label='Major.Minor.Patch:' validationMode='any'" />
