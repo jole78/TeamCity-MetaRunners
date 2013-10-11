@@ -3,8 +3,8 @@
   <description>Semantic Versioning (SemVer) build number runner(e.g. 1.0.3+78.4112e01).</description>
   <settings>
     <parameters>
-      <param name="mr.SemVer.ManualVersion" value="" spec="text description='Manual version. If included, it overrides any other method.' display='normal' label='Major.Minor.Patch:' validationMode='any'" />
-      <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, MAJOR.MINOR.PATCH will be parsed from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
+      <param name="mr.SemVer.ManualVersion" value="" spec="text description='Manual version. If included, it overrides any other method.' display='normal' label='Version:' validationMode='any'" />
+      <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, version will be parsed from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
       <param name="mr.SemVer.RevisionType" value="n/a" spec="select data_1='n/a' data_2='SHA' data_3='STD' label_2='Git Style (Short Hash)' label_3='Standard (default)' description='The revision part from the VCS will be included as part of the SemVer build metadata. (e.g. short commit hash for Git, ChangeSet for TFS, etc.)' display='normal' label='Revision Type:'" />
       <param name="mr.SemVer.IgnoreMetaData" value="$false" spec="checkbox checkedValue='$true' description='Skips the build metadata part (i.e. +X.X)' display='normal' label='Ignore Build Metadata:' uncheckedValue='$false'" />
       <param name="mr.SemVer.Debug" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log debug messages?' display='normal' label='Debug:' uncheckedValue='SilentlyContinue'" />
@@ -84,16 +84,20 @@ function Invoke-Exit {
 }
 
 function Get-SemVer {
+	[CmdletBinding()]
+	param()
+	
 	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
 	
-	$version = $mr.ManualVersion -as [System.Version]
+	$version = $mr.ManualVersion
 	
-	if($mr.NuSpecFilePath -and ($version -eq $null)) {
+	if($mr.NuSpecFilePath -and [String]::IsNullOrWhiteSpace($version)) {
 		$version = Get-NuSpecVersion -ea:Stop		
 	}
 	
-	if($version -eq $null) {
-		Write-Error "[Major.Minor.Patch] of SemVer failed. Found no valid method of parsing it."
+	if([String]::IsNullOrWhiteSpace($version)) {
+		Write-Error "SemVer creation failed. Found no valid version."
+		return
 	}
 	
 	Write-Debug $("Version: {0}" -f $version)
@@ -138,7 +142,7 @@ if ($env:TEAMCITY_VERSION) {
 }
 
 try {
-	Get-SemVer | Update-BuildNumber
+	Get-SemVer -ea:Stop | Update-BuildNumber
 } catch {
 	Write-Error $_
 	Invoke-Exit 1
