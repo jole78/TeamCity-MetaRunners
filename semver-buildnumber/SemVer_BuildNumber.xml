@@ -4,8 +4,8 @@
   <settings>
     <parameters>
       <param name="mr.SemVer.ManualVersion" value="" spec="text description='Manual version. If included, it overrides any other method.' display='normal' label='Major.Minor.Patch:' validationMode='any'" />
-      <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, the version will be fetched from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
-      <param name="mr.SemVer.VCSType" value="None" spec="select data_1='None' data_2='Git' data_3='TFS' description='If chosen, the revision part from the VCS will be included as part of the SemVer. (e.g. short commit hash for Git, ChangeSet for TFS, etc.)' display='normal' label='VCS Type:'" />
+      <param name="mr.SemVer.NuSpecFilePath" value="" spec="text description='If included, MAJOR.MINOR.PATCH will be parsed from the nuspec file.' display='normal' label='NuSpec File:' validationMode='any'" />
+      <param name="mr.SemVer.RevisionType" value="n/a" spec="select data_1='n/a' data_2='SHA' data_3='STD' label_2='Git Style (Short Hash)' label_3='Standard (default)' description='The revision part from the VCS will be included as part of the SemVer build metadata. (e.g. short commit hash for Git, ChangeSet for TFS, etc.)' display='normal' label='Revision Type:'" />
       <param name="mr.SemVer.Debug" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log debug messages?' display='normal' label='Debug:' uncheckedValue='SilentlyContinue'" />
       <param name="mr.SemVer.Verbose" value="SilentlyContinue" spec="checkbox checkedValue='Continue' description='Log verbose messages?' display='normal' label='Verbose:' uncheckedValue='SilentlyContinue'" />
     </parameters>
@@ -54,17 +54,22 @@ function Get-NuSpecVersion {
 
 function Get-BuildMetaData {
 	Write-Verbose $("Starting: '{0}'" -f $MyInvocation.MyCommand)
-	Write-Debug $("VCS Type: {0}" -f $mr.VCSType)
+	Write-Debug $("Revision Type: {0}" -f $mr.RevisionType)
 	Write-Debug $("Build Counter: {0}" -f $mr.BuildCounter)
 	
-	switch ($mr.VCSType) {
-		"Git" {
-			$git_short_hash = $mr.BuildVCSNumber.SubString(0,7)
-			Write-Debug $("Git ShortHash: {0}" -f $git_short_hash)
+	switch ($mr.RevisionType) {
+		"SHA" {
+			Write-Debug $("VCS Build Number: {0}" -f $mr.BuildVCSNumber)
+			$short_hash = $mr.BuildVCSNumber.SubString(0,7)
+			Write-Debug $("ShortHash: {0}" -f $short_hash)
 		
-			return $("{0}.{1}" -f $mr.BuildCounter, $git_short_hash)
+			return $("{0}.{1}" -f $mr.BuildCounter, $short_hash)
 		}
-		default {return $mr.BuildCounter} #same as None
+		"STD" {
+			Write-Debug $("VCS Build Number: {0}" -f $mr.BuildVCSNumber)
+			return $("{0}.{1}" -f $mr.BuildCounter, $mr.BuildVCSNumber)
+		}
+		default {return $mr.BuildCounter} #same as n/a
 	}
 	
 }
@@ -112,8 +117,8 @@ $mr = @{
 	NuSpecFilePath = "%mr.SemVer.NuSpecFilePath%"
 	BuildCounter = "%build.counter%"
 	BuildVCSNumber = "%build.vcs.number%"
-	VCSType = "%mr.SemVer.VCSType%"
 	ManualVersion = "%mr.SemVer.ManualVersion%"
+	RevisionType = "%mr.SemVer.RevisionType%"
 }
 
 $VerbosePreference = "%mr.SemVer.Verbose%"
