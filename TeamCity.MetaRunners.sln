@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.20827.3
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget-install", "nuget-install", "{DD3376D7-2F58-4C76-AE38-64766D7B4F5E}"
 	ProjectSection(SolutionItems) = preProject
@@ -22,6 +22,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "semver-buildnumber", "semve
 		semver-buildnumber\runner.tests.ps1 = semver-buildnumber\runner.tests.ps1
 		semver-buildnumber\SemVer_BuildNumber.xml = semver-buildnumber\SemVer_BuildNumber.xml
 		semver-buildnumber\template.nuspec = semver-buildnumber\template.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "psbuild", "psbuild", "{D7950C95-6E85-4A5B-9587-BD95A2162139}"
+	ProjectSection(SolutionItems) = preProject
+		psbuild\_Pester.ps1 = psbuild\_Pester.ps1
+		psbuild\_TestContext.ps1 = psbuild\_TestContext.ps1
+		psbuild\AssemblyInfo.cs = psbuild\AssemblyInfo.cs
+		psbuild\MRPP_PSBuild.xml = psbuild\MRPP_PSBuild.xml
+		psbuild\runner.ps1 = psbuild\runner.ps1
+		psbuild\runner.tests.ps1 = psbuild\runner.tests.ps1
 	EndProjectSection
 EndProject
 Global
