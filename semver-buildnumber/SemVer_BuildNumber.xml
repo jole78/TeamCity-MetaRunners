@@ -17,8 +17,8 @@
           <param name="jetbrains_powershell_noprofile" value="true" />
           <param name="jetbrains_powershell_errorToError" value="error" />
           <param name="jetbrains_powershell_script_mode" value="CODE" />
-          <param name="jetbrains_powershell_minVersion" value="3.0" />
           <param name="jetbrains_powershell_bitness" value="x86" />
+          <param name="jetbrains_powershell_minVersion" value="3.0" />
           <param name="teamcity.step.mode" value="default" />
           <param name="jetbrains_powershell_script_code">
             <![CDATA[
@@ -62,10 +62,11 @@ function Get-BuildMetaData {
 	switch ($mr.RevisionType) {
 		"SHA" {
 			Write-Debug $("VCS Build Number: {0}" -f $mr.BuildVCSNumber)
-			$short_hash = $mr.BuildVCSNumber.SubString(0,7)
+			$short_hash = $mr.BuildVCSNumber.SubString(0,7).ToUpper();
 			Write-Debug $("ShortHash: {0}" -f $short_hash)
-		
-			return $("{0}.{1}" -f $mr.BuildCounter, $short_hash)
+			#the BuiltMetaData MUST start with a letter and can ONLY contain numbers and letters
+			return $("b{0}sha{1}" -f $mr.BuildCounter, $short_hash)
+			#return $("{0}.{1}" -f $mr.BuildCounter, $short_hash)
 		}
 		"STD" {
 			Write-Debug $("VCS Build Number: {0}" -f $mr.BuildVCSNumber)
@@ -113,7 +114,7 @@ function Get-SemVer {
 	$build_metadata = Get-BuildMetaData	
 	Write-Debug $("Build MetaData: {0}" -f $build_metadata)
 	
-	return $("{0}+{1}" -f $version, $build_metadata) 
+	return $("{0}-{1}" -f $version, $build_metadata) 
 }
 
 function Set-PSConsole {
